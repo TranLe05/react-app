@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-//    triggers {
-//        pollSCM()
-//    }
-
     options {
         timeout(time: 30, unit: 'MINUTES')
         timestamps()
@@ -16,6 +12,7 @@ pipeline {
                 checkout scm
             }
         }
+
         stage('Install & Lint & Build') {
             agent {
                 docker {
@@ -23,12 +20,12 @@ pipeline {
                     reuseNode true
                 }
             }
-        }
-        stage {
-             sh 'node -v && npm -v'
-             sh 'npm ci'
-             sh 'npm run lint'
-             sh 'npm run build'
+            steps {
+                sh 'node -v && npm -v'
+                sh 'npm ci'
+                sh 'npm run lint'
+                sh 'npm run build'
+            }
         }
     }
 
