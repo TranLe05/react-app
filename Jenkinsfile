@@ -1,0 +1,43 @@
+pipeline {
+    agent any
+
+//    triggers {
+//        pollSCM()
+//    }
+
+    options {
+        timeout(time: 30, unit: 'MINUTES')
+        timestamps()
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        stage('Install & Lint & Build') {
+            agent {
+                docker {
+                    image 'node:22-alpine'
+                    reuseNode true
+                }
+            }
+        }
+        stage {
+             sh 'node -v && npm -v'
+             sh 'npm ci'
+             sh 'npm run lint'
+             sh 'npm run build'
+        }
+    }
+
+    post {
+        success {
+            archiveArtifacts artifacts: 'dist/**/*', fingerprint: true, allowEmptyArchive: false
+        }
+        failure {
+            echo 'Pipeline failed - view log each stage (Install & Lint & Build)'
+        }
+    }
+}
